@@ -1,34 +1,8 @@
 {
-    "dist": "./dist_formal",
+    "dist": "/media/imucs/DataDisk/haoxiang/Release/speech_enhancement/dist_lps",
     "random_seed": 111,
     "sampling_rate": 16000,
     "dataset": [
-        {
-            "name": "train",
-            "clean": {
-                "database": "./data/clean/data/lisa/data/timit/raw/TIMIT/TRAIN",
-                "min_sampling": 16384,
-                "ext": "WAV",
-                "recurse": true,
-                "limit": 900,
-                "offset": 0
-            },
-            "noise": {
-                "database": "./data/noise",
-                "types": [
-                    "factoryfloor1",
-                    "factoryfloor2",
-                    "destroyerengine",
-                    "destroyerops",
-                    "machinegun",
-                    "m109",
-                    "babble"
-                ]
-            },
-            "snr": [
-                0, -5, -10, -15
-            ]
-        },
         {
             "name": "test",
             "clean": {
@@ -54,7 +28,15 @@
                 ]
             },
             "snr": [
-                0, -3, -5, -7, -10, -12, -15, -17,-20
+                0,
+                -3,
+                -5,
+                -7,
+                -10,
+                -12,
+                -15,
+                -17,
+                -20
             ]
         }
     ]

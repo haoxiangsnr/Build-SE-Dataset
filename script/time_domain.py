@@ -56,9 +56,10 @@ def main(config):
         mixture_store = {}
         clean_store = {}
         for i, clean in tqdm(enumerate(clean_ys, start=1), desc="合成带噪语音"):
+            num = str(i).zfill(4)
             for snr in cfg["snr"]:
                 for noise_type in noise_ys.keys():
-                    num = str(i).zfill(4)
+
                     basename_text = f"{num}_{noise_type}_{snr}"
 
                     clean, mixture = corrected_the_length_of_noise_and_clean_speech(
@@ -71,9 +72,7 @@ def main(config):
 
                     mixture_store[basename_text] = mixture
 
-                    if i == 1:
-                        # 防止纯净语音重复存储
-                        clean_store[num] = clean
+            clean_store[num] = clean
 
         print(f"Synthesize finished，storing file...")
         np.save((dataset_dir / "clean.npy").as_posix(), clean_store)

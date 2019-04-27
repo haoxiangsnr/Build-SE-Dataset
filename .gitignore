@@ -4,6 +4,7 @@ release*/
 dist*/
 .ipynb_checkpoints/
 .vscode
+data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
