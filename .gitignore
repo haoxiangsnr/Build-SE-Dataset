@@ -1,9 +1,7 @@
-data/clean
 !data/data/.gitkeep
-release*/
 dist*/
 .ipynb_checkpoints/
-.vscode
+.vscode/
 data
 
 # Byte-compiled / optimized / DLL files

@@ -8,7 +8,7 @@
                 "min_sampling": 16384,
                 "ext": "WAV",
                 "recurse": true,
-                "limit": 900,
+                "limit": 100,
                 "offset": 0
             },
             "noise": {

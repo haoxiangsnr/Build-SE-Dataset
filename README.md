@@ -13,12 +13,12 @@ Todo
 
 ## Features
 
-- [x] Time Domain
-- [x] Log Power Spectrum
-    - [x] Speech
-    - [x] Single frames
-- [ ] Log Mel Spectrum
+- [x] Time domain
+- [x] Frequency domain
+    - [ ] Log mel spectrum (LMS)
+    - [x] Log power spectrum (LPS)
 
 ## ToDo
 
-- [ ] 替换 NPY 为更加高效的存取格式
+- [ ] Replace .npy for a more efficient format
+- [ ] Add more param with extracting spectrum
