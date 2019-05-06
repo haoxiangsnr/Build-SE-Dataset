@@ -2,6 +2,7 @@ import os
 import shutil
 
 import librosa
+import torch
 import numpy as np
 from tqdm import tqdm
 
@@ -114,3 +115,28 @@ def load_wavs(file_paths, sr=16000, min_sampling=0):
     print(f"需加载 wav 文件数量为：{len(file_paths)}")
     print(f"实际加载 wav 文件数量为：{actual_num}")
     return wavs
+
+def unfold_spectrum(spec, n_pad=3):
+    """对频谱应用滑窗操作
+    
+    Arguments:
+        spec {np.array} -- 频谱，(n_fft, T)
+    
+    Keyword Arguments:
+        n_pad {int} -- 输入帧 pad 的大小 (default: {3, 左边 3 帧，右边也是 3 帧})
+    
+    Returns:
+        np.array -- 拓展过频谱，尺寸为 (n_fft, T * (n_pad * 2 + 1))
+    """
+    # 补齐频谱左侧后右侧
+    left_pad_spec = np.repeat(spec[:, 0].reshape(-1, 1), n_pad, axis=1) # (257, 3)
+    right_pad_spec = np.repeat(spec[:, -1].reshape(-1, 1), n_pad, axis=1) # (257, 3)
+    assert left_pad_spec.shape[-1] == right_pad_spec.shape[-1] == n_pad
+    spec = np.concatenate([left_pad_spec, spec, right_pad_spec], axis=1).T # (120, 257)
+    spec = torch.Tensor(spec)
+
+    # 类似于滑窗的效果，窗大小为 2*n_pad+1，每次滑动的间隔为 1
+    spec_list = spec.unfold(0, 2 * n_pad + 1, 1) # [tensor(257, 7), tensor(257, 7), ...], len = 114
+    spec = torch.cat(tuple(spec_list), dim=1).numpy() # (257, 798)
+
+    return spec

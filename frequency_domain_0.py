@@ -7,6 +7,7 @@ import librosa
 import numpy as np
 from tqdm import tqdm
 
+from utils.extract_features import lps
 from utils.utils import (add_noise_for_waveform,
                          corrected_the_length_of_noise_and_clean_speech,
                          load_wavs, prepare_empty_dirs)
@@ -14,13 +15,15 @@ from utils.utils import (add_noise_for_waveform,
 
 def main(config, random_seed, dist):
     """
-    构建时域上的语音增强数据集
+    构建*频域*上的语音增强数据集（Log Power Spectrum）
+    数据集为语句级别，带噪语音和它相应纯净语音的频谱尺寸相同
 
     Steps:
         1. 加载纯净语音信号
         2. 加载噪声文件
         3. 在纯净语音信号上叠加噪声信号
-        4. 分别存储带噪语音与纯净语音
+        4. 分别计算 LPS 特征
+        5. 分别存储带噪语音与纯净语音
 
     Args:
         config (dict): 配置信息
@@ -34,17 +37,18 @@ def main(config, random_seed, dist):
         ...
 
         mixture.npy is {
-            "0001_babble_-5": [signals, ...],
-            "0001_babble_-10": [signals, ...],
+            "0001_babble_-5": (257, T),
+            "0001_babble_-10": (257, T),
             ...
         }
 
         clean.npy is {
-            "0001": [signals, ...],
-            "0002": [signals, ...],
+            "0001": (257, T),
+            "0002": (257, T),
             ...
         }
     """
+    global clean_lps
     np.random.seed(random_seed)
     dist_dir = Path(dist)
 
@@ -99,17 +103,21 @@ def main(config, random_seed, dist):
                     mixture = add_noise_for_waveform(clean, mixture, int(snr))
                     assert len(mixture) == len(clean) == len(mixture)
 
-                    mixture_store[basename_text] = mixture
+                    mixture_lps = lps(mixture)
+                    clean_lps = lps(clean)
 
-            # 基于一条纯净语音可以合成多种类型的带噪语音，但仅存储一份纯净语音
-            clean_store[num] = clean
+                    assert mixture_lps.shape[0] == clean_lps.shape[0] == 257
+                    mixture_store[basename_text] = mixture_lps
+
+            clean_store[num] = clean_lps
 
         print(f"Synthesize finished，storing file...")
         np.save((dataset_dir / "clean.npy").as_posix(), clean_store)
         np.save((dataset_dir / "mixture.npy").as_posix(), mixture_store)
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="合成时域带噪语音")
+    parser = argparse.ArgumentParser(description="合成频域带噪语音")
     parser.add_argument("-C", "--config", required=True, type=str, help="配置文件")
     parser.add_argument("-S", "--random_seed", default=0, type=int, help="随机种子")
     parser.add_argument("-O", "--dist", default="./dist", type=str, help="输出目录")

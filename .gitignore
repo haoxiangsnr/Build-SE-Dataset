@@ -1,8 +1,9 @@
 !data/data/.gitkeep
 dist*/
 .ipynb_checkpoints/
-.vscode/
+.vscode
 data
+snippets
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
