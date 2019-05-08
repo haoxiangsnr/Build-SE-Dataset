@@ -7,49 +7,46 @@ import librosa
 import numpy as np
 from tqdm import tqdm
 
-from utils.extract_features import lps
+from utils.extract_features import mag
 from utils.utils import (add_noise_for_waveform,
                          corrected_the_length_of_noise_and_clean_speech,
-                         load_wavs, prepare_empty_dirs, unfold_spectrum)
+                         load_wavs, prepare_empty_dirs, input_normalization, unfold_spectrum)
 
 
-def main(config, random_seed, dist, n_pad):
+def main(config, random_seed, dist, apply_normalization, n_pad):
     """
-    构建*频域*上的语音增强数据集（Log Power Spectrum）
-    每句带噪语音的时间步上都包含多帧，多帧的中心帧对应这个时间步上的一帧纯净语音
-    中心帧前面的时间帧：
-    中心帧后面的时间帧：
-    TODO 文档等待进一步更新
+    构建 IRM（Ideal ratio mask）语音增强数据集
+    数据集为语句级别，带噪语音和它相应纯净语音的频谱尺寸相同
 
     Steps:
         1. 加载纯净语音信号
         2. 加载噪声文件
         3. 在纯净语音信号上叠加噪声信号
-        4. 分别计算 LPS 特征
-        5. 将带噪语音的 LPS 特征进行拓展
-        5. 分别存储带噪语音与纯净语音
+        4. 计算频谱，mask等
+        5. 分别存储带噪语音的频谱与 mask
 
     Args:
         config (dict): 配置信息
         random_seed (int): 随机种子
         dist (str): 输出结果的目录
-        n_pad (int): 带噪语音的拓展大小
+        apply_normalization (bool): 是否对 mixture 语音进行规范化
+        n_pad (int): mixture 语音中帧的拓展范围，拓展后中心帧对应 mask 中的一帧
 
     Dataset:
         dataset_1/
             mixture.npy
-            clean.npy
+            mask.npy
         ...
 
         mixture.npy is {
-            "0001_babble_-5": (257 * 3 * , T),
-            "0001_babble_-10": (257 * 3, T),
+            "0001_babble_-5": (257, T * (n_pad * 2 + 1)),
+            "0001_babble_-10": (257, T * T * (n_pad * 2 + 1))
             ...
         }
 
-        clean.npy is {
-            "0001": (257, T),
-            "0002": (257, T),
+        mask.npy is {
+            "0001_babble_-5": (257, T),
+            "0001_babble_-10": (257, T),
             ...
         }
     """
@@ -93,7 +90,7 @@ def main(config, random_seed, dist, n_pad):
 
         # 合成带噪语音
         mixture_store = {}
-        clean_store = {}
+        mask_store = {}
         for i, clean in tqdm(enumerate(clean_ys, start=1), desc="合成带噪语音"):
             num = str(i).zfill(4)
             for snr in dataset_cfg["snr"]:
@@ -106,29 +103,34 @@ def main(config, random_seed, dist, n_pad):
                     )
 
                     mixture = add_noise_for_waveform(clean, noise, int(snr))
-                    assert len(mixture) == len(clean) == len(noise)
 
-                    mixture_lps = lps(mixture)
-                    clean_lps = lps(clean)
-                    mixture_lps = unfold_spectrum(mixture_lps, n_pad=n_pad)
+                    mixture_mag = mag(mixture)
+                    clean_mag = mag(clean)
+                    noise_mag = mag(noise)
 
-                    assert mixture_lps.shape[0] == clean_lps.shape[0] == 257
-                    mixture_store[basename_text] = mixture_lps
+                    if apply_normalization:
+                        mixture_mag = input_normalization(mixture_mag)
 
-            clean_store[num] = clean_lps
+                    mixture_mag = unfold_spectrum(mixture_mag, n_pad=n_pad)
+                    mask = noise_mag / (noise_mag + clean_mag)
+
+                    assert mixture_mag.shape[0] == mask.shape[0] == 257
+                    mixture_store[basename_text] = mixture_mag
+                    mask_store[basename_text] = mask
 
         print(f"Synthesize finished，storing file...")
-        np.save((dataset_dir / "clean.npy").as_posix(), clean_store)
+        np.save((dataset_dir / "mask.npy").as_posix(), mask_store)
         np.save((dataset_dir / "mixture.npy").as_posix(), mixture_store)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="合成频域带噪语音（可拓展帧）")
+    parser = argparse.ArgumentParser(description="合成频域带噪语音")
     parser.add_argument("-C", "--config", required=True, type=str, help="配置文件")
     parser.add_argument("-S", "--random_seed", default=0, type=int, help="随机种子")
+    parser.add_argument("-A", "--apply_normalization", action="store_true", help="对输入应用规范化，即减去均值除以标准差")
     parser.add_argument("-O", "--dist", default="./dist", type=str, help="输出目录")
     parser.add_argument("-P", "--n_pad", default=3, type=int, help="带噪语音需要拓展的大小")
     args = parser.parse_args()
 
     config = json.load(open(args.config))
-    main(config, args.random_seed, args.dist, args.n_pad)
+    main(config, args.random_seed, args.dist, args.apply_normalization, args.n_pad)

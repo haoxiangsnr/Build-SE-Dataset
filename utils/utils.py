@@ -2,8 +2,8 @@ import os
 import shutil
 
 import librosa
-import torch
 import numpy as np
+import torch
 from tqdm import tqdm
 
 def corrected_the_length_of_noise_and_clean_speech(clean_y, noise_y):
@@ -46,6 +46,11 @@ def load_noises(noise_wav_paths):
 
     return out
 
+
+def input_normalization(m):
+    mean = np.mean(m, axis=0)
+    std_var = np.std(m, axis=0)
+    return (m - mean) / std_var
 
 def add_noise_for_waveform(s, n, db):
     """
@@ -99,7 +104,6 @@ def load_wavs(file_paths, sr=16000, min_sampling=0):
         limit: 要求加载的数量上限
         sr: 采样率
         min_sampling: 最小采样点数
-
     """
     wavs = []
     actual_num = 0
@@ -117,26 +121,25 @@ def load_wavs(file_paths, sr=16000, min_sampling=0):
     return wavs
 
 def unfold_spectrum(spec, n_pad=3):
-    """对频谱应用滑窗操作
-    
-    Arguments:
-        spec {np.array} -- 频谱，(n_fft, T)
-    
-    Keyword Arguments:
-        n_pad {int} -- 输入帧 pad 的大小 (default: {3, 左边 3 帧，右边也是 3 帧})
-    
+    """
+    对频谱应用滑窗操作
+
+    Args:
+        spec (np.array): 频谱，(n_fft, T)
+        n_pad (int): 输入帧 pad 的大小 (default: 3，即左边 3 帧，右边也是 3 帧)
+
     Returns:
         np.array -- 拓展过频谱，尺寸为 (n_fft, T * (n_pad * 2 + 1))
     """
     # 补齐频谱左侧后右侧
-    left_pad_spec = np.repeat(spec[:, 0].reshape(-1, 1), n_pad, axis=1) # (257, 3)
-    right_pad_spec = np.repeat(spec[:, -1].reshape(-1, 1), n_pad, axis=1) # (257, 3)
+    left_pad_spec = np.repeat(spec[:, 0].reshape(-1, 1), n_pad, axis=1)  # (257, 3)
+    right_pad_spec = np.repeat(spec[:, -1].reshape(-1, 1), n_pad, axis=1)  # (257, 3)
     assert left_pad_spec.shape[-1] == right_pad_spec.shape[-1] == n_pad
-    spec = np.concatenate([left_pad_spec, spec, right_pad_spec], axis=1).T # (120, 257)
+    spec = np.concatenate([left_pad_spec, spec, right_pad_spec], axis=1).T  # (120, 257)
     spec = torch.Tensor(spec)
 
     # 类似于滑窗的效果，窗大小为 2*n_pad+1，每次滑动的间隔为 1
-    spec_list = spec.unfold(0, 2 * n_pad + 1, 1) # [tensor(257, 7), tensor(257, 7), ...], len = 114
-    spec = torch.cat(tuple(spec_list), dim=1).numpy() # (257, 798)
+    spec_list = spec.unfold(0, 2 * n_pad + 1, 1)  # [tensor(257, 7), tensor(257, 7), ...], len = 114
+    spec = torch.cat(tuple(spec_list), dim=1).numpy()  # (257, 798)
 
     return spec

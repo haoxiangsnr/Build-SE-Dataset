@@ -3,7 +3,7 @@ dist*/
 .ipynb_checkpoints/
 .vscode
 data
-snippets
+snippet
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

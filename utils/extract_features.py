@@ -18,3 +18,7 @@ def lps(y, pad=0):
     if pad != 0:
         lps = np.concatenate((np.zeros((257, pad)), lps, np.zeros((257, pad))), axis=1)
     return lps
+
+def mag(y):
+    D = librosa.stft(y, n_fft=512, hop_length=256, window='hamming')
+    return np.abs(D)

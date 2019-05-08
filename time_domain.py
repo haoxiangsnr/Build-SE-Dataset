@@ -91,13 +91,13 @@ def main(config, random_seed, dist):
                 for noise_type in noise_ys.keys():
                     basename_text = f"{num}_{noise_type}_{snr}"
 
-                    clean, mixture = corrected_the_length_of_noise_and_clean_speech(
+                    clean, noise = corrected_the_length_of_noise_and_clean_speech(
                         clean_y=clean,
                         noise_y=noise_ys[noise_type]
                     )
 
-                    mixture = add_noise_for_waveform(clean, mixture, int(snr))
-                    assert len(mixture) == len(clean) == len(mixture)
+                    mixture = add_noise_for_waveform(clean, noise, int(snr))
+                    assert len(mixture) == len(clean) == len(noise)
 
                     mixture_store[basename_text] = mixture
 

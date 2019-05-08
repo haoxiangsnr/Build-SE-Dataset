@@ -5,10 +5,10 @@
             "clean": {
                 "database": "./data/clean/data/lisa/data/timit/raw/TIMIT/TRAIN",
                 "sampling_rate": 16000,
-                "min_sampling": 0,
+                "min_sampling": 16384,
                 "ext": "WAV",
                 "recurse": true,
-                "limit": 10,
+                "limit": 400,
                 "offset": 0
             },
             "noise": {
@@ -23,9 +23,8 @@
                 ]
             },
             "snr": [
-                -5,
-                5,
-                15
+                0,
+                -5
             ]
         },
         {
@@ -33,10 +32,10 @@
             "clean": {
                 "database": "./data/clean/data/lisa/data/timit/raw/TIMIT/TEST",
                 "sampling_rate": 16000,
-                "min_sampling": 0,
+                "min_sampling": 16384,
                 "ext": "WAV",
                 "recurse": true,
-                "limit": 100,
+                "limit": 50,
                 "offset": 0
             },
             "noise": {
@@ -49,7 +48,9 @@
                 ]
             },
             "snr": [
-                -5
+                -5,
+                0,
+                5
             ]
         }
     ]
