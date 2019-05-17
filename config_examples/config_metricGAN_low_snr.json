@@ -1,0 +1,74 @@
+{
+    "dataset": [
+        {
+            "name": "Train",
+            "clean": {
+                "database": "./data/clean/data/lisa/data/timit/raw/TIMIT/TRAIN",
+                "sampling_rate": 16000,
+                "min_sampling": 16384,
+                "ext": "WAV",
+                "recurse": true,
+                "limit": 300,
+                "offset": 0
+            },
+            "noise": {
+                "database": "./data/Nonspeech",
+                "sampling_rate": 16000,
+                "types": [
+                    "n1",
+                    "n18",
+                    "n20",
+                    "n30",
+                    "n46",
+                    "n51",
+                    "n56",
+                    "n72",
+                    "n79",
+                    "n88"
+                ]
+            },
+            "snr": [
+                -15,
+                -10,
+                -5,
+                0,
+                5
+            ]
+        },
+        {
+            "name": "Test",
+            "clean": {
+                "database": "./data/clean/data/lisa/data/timit/raw/TIMIT/TRAIN",
+                "sampling_rate": 16000,
+                "min_sampling": 16384,
+                "ext": "WAV",
+                "recurse": true,
+                "limit": 100,
+                "offset": 400
+            },
+            "noise": {
+                "database": "./data/Nonspeech",
+                "sampling_rate": 16000,
+                "types": [
+                    "n2",
+                    "n19",
+                    "n21",
+                    "n31",
+                    "n47",
+                    "n52",
+                    "n57",
+                    "n73",
+                    "n80",
+                    "n89"
+                ]
+            },
+            "snr": [
+                -20,
+                -15,
+                -10,
+                -5,
+                0
+            ]
+        }
+    ]
+}

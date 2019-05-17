@@ -3,6 +3,7 @@ import json
 import random
 from pathlib import Path
 
+import joblib
 import librosa
 import numpy as np
 from tqdm import tqdm
@@ -112,9 +113,8 @@ def main(config, random_seed, dist):
             clean_store[num] = clean_lps
 
         print(f"Synthesize finished，storing file...")
-        np.save((dataset_dir / "clean.npy").as_posix(), clean_store)
-        np.save((dataset_dir / "mixture.npy").as_posix(), mixture_store)
-
+        joblib.dump(clean_store, (dataset_dir / "clean.pkl").as_posix())
+        joblib.dump(mixture_store, (dataset_dir / "mixture.pkl").as_posix())
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="合成频域带噪语音")

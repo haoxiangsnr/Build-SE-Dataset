@@ -1,0 +1,33 @@
+{
+    "dataset": [
+        {
+            "name": "train",
+            "clean": {
+                "database": "./data/clean/data/lisa/data/timit/raw/TIMIT/TRAIN",
+                "sampling_rate": 16000,
+                "min_sampling": 65536,
+                "_comment": "stft(65536)=257,257，最后一帧是 pad 出来的，不确定好坏，先考虑丢掉",
+                "ext": "WAV",
+                "recurse": true,
+                "limit": 2400,
+                "offset": 0
+            },
+            "noise": {
+                "database": "./data/noise",
+                "sampling_rate": 16000,
+                "types": [
+                    "babble",
+                    "factoryfloor1",
+                    "destroyerops",
+                    "destroyerengine"
+                ]
+            },
+            "snr": [
+                0,
+                -5,
+                -10,
+                -15
+            ]
+        }
+    ]
+}

@@ -1,10 +1,11 @@
 import os
 import shutil
-
 import librosa
 import numpy as np
 import torch
+import soundfile
 from tqdm import tqdm
+import time
 
 def corrected_the_length_of_noise_and_clean_speech(clean_y, noise_y):
     """
@@ -108,7 +109,7 @@ def load_wavs(file_paths, sr=16000, min_sampling=0):
     wavs = []
     actual_num = 0
 
-    for i, path in tqdm(enumerate(file_paths, start=1), desc="Loading wavs ..."):
+    for i, path in tqdm(enumerate(file_paths), desc="Loading wavs ..."):
         wav, _ = librosa.load(path, sr=sr)
         if len(wav) >= min_sampling:
             wavs.append(wav)

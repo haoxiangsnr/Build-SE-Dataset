@@ -3,6 +3,7 @@ import json
 import random
 from pathlib import Path
 
+import joblib
 import librosa
 import numpy as np
 from tqdm import tqdm
@@ -118,9 +119,10 @@ def main(config, random_seed, dist, apply_normalization, n_pad):
                     mixture_store[basename_text] = mixture_mag
                     mask_store[basename_text] = mask
 
+
         print(f"Synthesize finished，storing file...")
-        np.save((dataset_dir / "mask.npy").as_posix(), mask_store)
-        np.save((dataset_dir / "mixture.npy").as_posix(), mixture_store)
+        joblib.dump(mask_store, (dataset_dir / "mask.pkl").as_posix())
+        joblib.dump(mixture_store, (dataset_dir / "mixture.pkl").as_posix())
 
 
 if __name__ == "__main__":
